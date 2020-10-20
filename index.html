@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="UTF-8" />
+    <title>Yearn Contributors</title>
+    <style>
+      button {
+        background-color: transparent;
+        border: none;
+        cursor: pointer;
+      }
+      a {
+        color: #000;
+        text-decoration: none;
+        margin-bottom: 50px;
+        display: inline-flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+      }
+      .user-img {
+        width: 140px;
+        height: 140px;
+        margin: 20px;
+        margin-bottom: 0px;
+        border-radius: 50%;
+      }
+      .contributors {
+        margin: 50px auto;
+        text-align: center;
+        display: grid;
+        width: 100%;
+        grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
+      }
+      .user-name {
+        font-size: 22px;
+        padding: 10px;
+        text-overflow: ellipsis;
+        overflow: hidden;
+        max-width: 160px;
+        white-space: nowrap;
+      }
+      .wrapper {
+        display: flex;
+        max-width: 70%;
+        flex-direction: column;
+        margin: 0 auto;
+      }
+      .statistics {
+        display: flex;
+        align-self: center;
+      }
+      .statistic {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        width: 260px;
+      }
+      .statistic-header {
+        font-size: 24px;
+        color: #bbb;
+      }
+      .statistic-value {
+        font-size: 76px;
+      }
+    </style>
+    <script src="https://unpkg.com/react@16/umd/react.development.js"></script>
+    <script src="https://unpkg.com/react-dom@16/umd/react-dom.development.js"></script>
+    <script src="https://unpkg.com/babel-standalone@6.15.0/babel.min.js"></script>
+  </head>
+  <body>
+    <div id="root"></div>
+    <script type="text/babel">
+      function Contributor(props) {
+        const { contributor } = props;
+        const { login, avatar_url, html_url } = contributor;
+        return (
+          <a href={html_url} target="_blank">
+            <button>
+              <img className="user-img" src={avatar_url} />
+              <div className="user-name" title={login}>
+                {login}
+              </div>
+            </button>
+          </a>
+        );
+      }
+
+      class Contributors extends React.Component {
+        constructor(props) {
+          super(props);
+          this.state = {
+            contributors: [],
+            repoStatistics: {},
+          };
+        }
+
+        componentDidMount() {
+          const setContributors = (contributors) => {
+            this.setState({ contributors });
+          };
+          const setRepoStatistics = (repoStatistics) => {
+            this.setState({ repoStatistics });
+          };
+          fetch("http://localhost:3000/dev/yearn/repos/contributors")
+            .then((response) => response.json())
+            .then(setContributors);
+          fetch("http://localhost:3000/dev/yearn/repos/statistics")
+            .then((response) => response.json())
+            .then(setRepoStatistics);
+        }
+        render() {
+          return (
+            <div className="wrapper">
+              <img src="yearn-logo-text.svg" />
+              <div className="statistics">
+                <div className="statistic">
+                  <div className="statistic-header">Repositories</div>
+                  <div className="statistic-value">
+                    {this.state.repoStatistics.repoCount}
+                  </div>
+                </div>
+                <div className="statistic">
+                  <div className="statistic-header">Contributors</div>
+                  <div className="statistic-value">
+                    {this.state.repoStatistics.contributorCount}
+                  </div>
+                </div>
+                <div className="statistic">
+                  <div className="statistic-header">Commits</div>
+                  <div className="statistic-value">
+                    {this.state.repoStatistics.commitCount}
+                  </div>
+                </div>
+              </div>
+              <div className="contributors">
+                {this.state.contributors.map((contributor, idx) => (
+                  <Contributor key={idx} contributor={contributor} />
+                ))}
+              </div>
+            </div>
+          );
+        }
+      }
+
+      ReactDOM.render(
+        <div>
+          <Contributors />
+        </div>,
+        document.getElementById("root")
+      );
+    </script>
+  </body>
+</html>
